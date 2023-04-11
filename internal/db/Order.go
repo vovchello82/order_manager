@@ -6,10 +6,10 @@ import (
 )
 
 type Order struct {
-	Id              string
-	PickUpLocation  string
-	DropOffLocation string
-	Customer        string
+	Id       string `json:"id"`
+	From     string `json:"from"`
+	To       string `json:"to"`
+	Customer string `json:"customer"`
 }
 
 func init() {
@@ -28,9 +28,9 @@ func randSeq(n int) string {
 
 func NewRandomOrder() *Order {
 	return &Order{
-		Id:              randSeq(4),
-		PickUpLocation:  randSeq(10),
-		DropOffLocation: randSeq(10),
-		Customer:        "testUser",
+		Id:       randSeq(4),
+		From:     randSeq(10),
+		To:       randSeq(10),
+		Customer: "testUser",
 	}
 }

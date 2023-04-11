@@ -6,6 +6,7 @@ import (
 	domain "order_manager/internal/db"
 	"order_manager/internal/placeorder"
 	"order_manager/internal/publisher"
+	"order_manager/internal/subscriber"
 	"os"
 	"os/signal"
 	"time"
@@ -14,6 +15,9 @@ import (
 func cleanup() {
 	fmt.Println("cleanup")
 }
+
+const ORDER_QUEUE = "orders"
+const ORDER_RESULT_TOPIC = "order-results"
 
 func main() {
 	// Hello world, the web server
@@ -27,8 +31,14 @@ func main() {
 		os.Exit(1)
 	}()
 
-	redisPublisher := publisher.NewRedisPublisher()
-	placeOrder := placeorder.NewPlaceOrderUseCase(redisPublisher)
+	orderStorage := domain.NewStorage()
+	redisPublisher := publisher.NewRedisPublisher(ORDER_QUEUE)
+	redisSubscriber := subscriber.NewSubscriberRedis(ORDER_RESULT_TOPIC, orderStorage)
+
+	go redisSubscriber.HandleOrderResult()
+
+	placeOrder := placeorder.NewPlaceOrderUseCase(redisPublisher, orderStorage)
+
 	for {
 		order := domain.NewRandomOrder()
 		log.Printf("sending order %s", order)
@@ -36,6 +46,6 @@ func main() {
 			log.Fatalf("error on sending order %s", err)
 		}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }

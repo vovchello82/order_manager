@@ -8,11 +8,13 @@ import (
 
 type PlaceOrderUseCase struct {
 	publisher pub.Publisher
+	db        *domain.Storage
 }
 
-func NewPlaceOrderUseCase(publisher pub.Publisher) *PlaceOrderUseCase {
+func NewPlaceOrderUseCase(publisher pub.Publisher, storage *domain.Storage) *PlaceOrderUseCase {
 	return &PlaceOrderUseCase{
 		publisher: publisher,
+		db:        storage,
 	}
 }
 func (puc *PlaceOrderUseCase) PlaceOrder(order domain.Order) error {
@@ -20,6 +22,7 @@ func (puc *PlaceOrderUseCase) PlaceOrder(order domain.Order) error {
 	if err != nil {
 		return err
 	}
+	puc.db.PutOrder(order)
 
 	return puc.publisher.EmitObject(string(payload))
 }

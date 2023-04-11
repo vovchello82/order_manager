@@ -8,10 +8,11 @@ import (
 )
 
 type PublisherRedis struct {
+	key         string
 	redisClient *redis.Client
 }
 
-func NewRedisPublisher() *PublisherRedis {
+func NewRedisPublisher(key string) *PublisherRedis {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
@@ -19,11 +20,12 @@ func NewRedisPublisher() *PublisherRedis {
 	})
 
 	return &PublisherRedis{
+		key:         key,
 		redisClient: redisClient,
 	}
 }
 
 func (pr *PublisherRedis) EmitObject(payload string) error {
 	log.Printf("sending paload %s", payload)
-	return pr.redisClient.RPush(context.TODO(), "orders", payload).Err()
+	return pr.redisClient.RPush(context.TODO(), pr.key, payload).Err()
 }
