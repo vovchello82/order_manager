@@ -27,3 +27,7 @@ func (s *Storage) GetOrderById(id string) (*Order, error) {
 func (s *Storage) DeleteOrderById(id string) {
 	delete(s.db, id)
 }
+
+func (s *Storage) Size() int {
+	return len(s.db)
+}
