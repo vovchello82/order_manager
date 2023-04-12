@@ -20,12 +20,15 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric"
 )
 
-func cleanup() {
-	fmt.Println("cleanup")
-}
+var ticker = time.NewTicker(5 * time.Second)
 
 const ORDER_QUEUE = "orders"
 const ORDER_RESULT_TOPIC = "order-results"
+
+func cleanup() {
+	fmt.Println("cleanup")
+	ticker.Stop()
+}
 
 func main() {
 	c := make(chan os.Signal, 1)
@@ -61,14 +64,13 @@ func main() {
 		o.ObserveInt64(gauge, int64(orderStorage.Size()))
 		return nil
 	}, gauge)
-	for {
+
+	for range ticker.C {
 		order := domain.NewRandomOrder()
 		log.Printf("sending order %s", order)
 		if err := placeOrder.PlaceOrder(*order); err != nil {
 			log.Fatalf("error on sending order %s", err)
 		}
-
-		time.Sleep(5 * time.Second)
 	}
 }
 

@@ -1,6 +1,9 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+	"log"
+)
 
 type Storage struct {
 	db map[string]Order
@@ -12,9 +15,8 @@ func NewStorage() *Storage {
 	}
 }
 
-func (s *Storage) PutOrder(o Order) error {
+func (s *Storage) PutOrder(o Order) {
 	s.db[o.Id] = o
-	return nil
 }
 
 func (s *Storage) GetOrderById(id string) (*Order, error) {
@@ -25,7 +27,9 @@ func (s *Storage) GetOrderById(id string) (*Order, error) {
 }
 
 func (s *Storage) DeleteOrderById(id string) {
+	log.Printf("size before deleting %s : %d", id, len(s.db))
 	delete(s.db, id)
+	log.Printf("size after deleting %d", len(s.db))
 }
 
 func (s *Storage) Size() int {

@@ -40,7 +40,6 @@ func (sr *SubscriberRedis) HandleOrderResult() error {
 	for msg := range channel {
 		result := &OrderPlacementResult{}
 		json.Unmarshal([]byte(msg.Payload), result)
-		sr.db.GetOrderById(result.OrderId)
 		log.Printf("order was placed %s by taxi %s", result.OrderId, result.TaxiId)
 		sr.db.DeleteOrderById(result.OrderId)
 	}

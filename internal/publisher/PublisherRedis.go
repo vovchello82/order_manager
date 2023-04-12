@@ -26,6 +26,6 @@ func NewRedisPublisher(key string) *PublisherRedis {
 }
 
 func (pr *PublisherRedis) EmitObject(payload string) error {
-	log.Printf("sending paload %s", payload)
+	log.Printf("sending payload %s", payload)
 	return pr.redisClient.RPush(context.TODO(), pr.key, payload).Err()
 }
