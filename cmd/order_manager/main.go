@@ -9,6 +9,7 @@ import (
 	"order_manager/internal/placeorder"
 	"order_manager/internal/publisher"
 	"order_manager/internal/subscriber"
+	"order_manager/internal/tracing"
 	"os"
 	"os/signal"
 	"time"
@@ -65,17 +66,22 @@ func main() {
 		return nil
 	}, gauge)
 
+	otelCtx := tracing.NewOtelTracingContext()
+	defer otelCtx.Close()
 	for range ticker.C {
+		spanCtx, span := otelCtx.NewSpan(context.TODO(), "emmit")
 		order := domain.NewRandomOrder()
 		log.Printf("sending order %s", order)
-		if err := placeOrder.PlaceOrder(*order); err != nil {
+		if err := placeOrder.PlaceOrder(spanCtx, *order); err != nil {
+			otelCtx.SetSpanFailed(span, err)
+			span.End()
 			log.Fatalf("error on sending order %s", err)
 		}
+		span.End()
 	}
 }
 
 func serveMetrics() {
-	log.Printf("serving metrics at localhost:2223/metrics")
 	http.Handle("/metrics", promhttp.Handler())
 	err := http.ListenAndServe(":2223", nil)
 	if err != nil {
